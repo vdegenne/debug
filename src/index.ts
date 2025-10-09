@@ -22,6 +22,7 @@ interface LoggerOptions {
 	showFilePrefix: boolean
 
 	color: ChalkInstance | undefined
+	errorColor: ChalkInstance | undefined
 }
 
 export class Logger {
@@ -33,6 +34,7 @@ export class Logger {
 			logIfDevelopment: true,
 			showFilePrefix: true,
 			color: undefined,
+			errorColor: undefined,
 			...options,
 		}
 	}
@@ -123,6 +125,17 @@ export class Logger {
 			console.log(this.#options.color(msg))
 		} else {
 			console.log(msg)
+		}
+	}
+	error(value: any) {
+		if (!this.#shouldLog()) return
+		const prefix = this.#getFilePrefix()
+		const msg =
+			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
+		if (this.#options.errorColor) {
+			console.error(this.#options.errorColor(msg))
+		} else {
+			console.error(msg)
 		}
 	}
 }
