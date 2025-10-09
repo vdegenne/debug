@@ -1,0 +1,37 @@
+{
+	"name": "@vdegenne/debug",
+	"version": "0.1.0",
+	"description": "",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"types": "./lib/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "wireit"
+	},
+	"files": [
+		"./lib/"
+	],
+	"devDependencies": {
+		"@types/node": "^24.7.0",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.9",
+		"wireit": "^0.14.12"
+	},
+	"wireit": {
+		"build": {
+			"command": "tsc --pretty",
+			"clean": "if-file-deleted",
+			"files": [
+				"./tsconfig.json",
+				"./src"
+			],
+			"output": [
+				"./lib"
+			]
+		}
+	}
+}
