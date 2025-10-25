@@ -1,4 +1,6 @@
-import {type ChalkInstance} from 'chalk'
+export interface ChalkInstance {
+	(...text: unknown[]): string
+}
 
 interface LoggerOptions {
 	/**
@@ -27,7 +29,9 @@ interface LoggerOptions {
 
 export function isDev() {
 	if (
+		// @ts-ignore
 		typeof process !== 'undefined' &&
+		// @ts-ignore
 		process.env?.NODE_ENV === 'development'
 	) {
 		return true
@@ -42,6 +46,7 @@ export function isDev() {
 	}
 	try {
 		// process.env.NODE_ENV is directly replaced by vite
+		// @ts-ignore
 		if (process.env.NODE_ENV === 'development') {
 			return true
 		}
