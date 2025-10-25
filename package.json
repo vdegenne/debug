@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/debug",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"description": "",
 	"type": "module",
 	"exports": {
@@ -24,6 +24,11 @@
 	},
 	"peerDependencies": {
 		"chalk": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"chalk": {
+			"optional": true
+		}
 	},
 	"wireit": {
 		"build": {
