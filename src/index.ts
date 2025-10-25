@@ -25,6 +25,41 @@ interface LoggerOptions {
 	errorColor: ChalkInstance | undefined
 }
 
+export function isDev() {
+	if (
+		typeof process !== 'undefined' &&
+		process.env?.NODE_ENV === 'development'
+	) {
+		return true
+	}
+	try {
+		// import.meta is only valid in ESM; this will throw in CJS
+		if ((import.meta as any)?.env?.DEV) {
+			return true
+		}
+	} catch {
+		// ignore if not supported
+	}
+	try {
+		// process.env.NODE_ENV is directly replaced by vite
+		if (process.env.NODE_ENV === 'development') {
+			return true
+		}
+	} catch {
+		// ignore if not supported
+	}
+	try {
+		// import.meta.env.DEV is directly replaced by vite
+		if (import.meta.env.DEV === true) {
+			return true
+		}
+	} catch {
+		// ignore if not supported
+	}
+
+	return false
+}
+
 export class Logger {
 	#options: LoggerOptions
 
@@ -55,38 +90,7 @@ export class Logger {
 			return false
 		}
 
-		if (
-			typeof process !== 'undefined' &&
-			process.env?.NODE_ENV === 'development'
-		) {
-			return true
-		}
-		try {
-			// import.meta is only valid in ESM; this will throw in CJS
-			if ((import.meta as any)?.env?.DEV) {
-				return true
-			}
-		} catch {
-			// ignore if not supported
-		}
-		try {
-			// process.env.NODE_ENV is directly replaced by vite
-			if (process.env.NODE_ENV === 'development') {
-				return true
-			}
-		} catch {
-			// ignore if not supported
-		}
-		try {
-			// import.meta.env.DEV is directly replaced by vite
-			if (import.meta.env.DEV === true) {
-				return true
-			}
-		} catch {
-			// ignore if not supported
-		}
-
-		return false
+		return isDev()
 	}
 
 	#getFilePrefix(): string {
