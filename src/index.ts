@@ -36,14 +36,14 @@ export function isDev() {
 	) {
 		return true
 	}
-	try {
-		// import.meta is only valid in ESM; this will throw in CJS
-		if ((import.meta as any)?.env?.DEV) {
-			return true
-		}
-	} catch {
-		// ignore if not supported
-	}
+	// try {
+	// 	// import.meta is only valid in ESM; this will throw in CJS
+	// 	if ((import.meta as any)?.env?.DEV) {
+	// 		return true
+	// 	}
+	// } catch {
+	// 	// ignore if not supported
+	// }
 	try {
 		// process.env.NODE_ENV is directly replaced by vite
 		// @ts-ignore
