@@ -23,6 +23,11 @@ interface LoggerOptions {
 	 */
 	showFilePrefix: boolean
 
+	/**
+	 * If undefined, will show the name of the script filename instead.
+	 */
+	prefix: string | undefined
+
 	color: ChalkInstance | undefined
 	errorColor: ChalkInstance | undefined
 }
@@ -75,6 +80,7 @@ export class Logger {
 			showFilePrefix: true,
 			color: undefined,
 			errorColor: undefined,
+			prefix: undefined,
 			...options,
 		}
 	}
@@ -117,8 +123,8 @@ export class Logger {
 			if (match) {
 				// get basename without extension
 				const parts = match[1].split(/[\/\\]/)
-				const file = parts[parts.length - 1]
-				return `[${file}] `
+				const file = parts[parts.length - 1] as string
+				return `[${file.toUpperCase()}] `
 			}
 		}
 
@@ -127,7 +133,9 @@ export class Logger {
 
 	log(value: any) {
 		if (!this.#shouldLog()) return
-		const prefix = this.#getFilePrefix()
+		const prefix = this.#options.prefix
+			? `[${this.#options.prefix}] `
+			: this.#getFilePrefix()
 		const msg =
 			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
 		if (this.#options.color) {
