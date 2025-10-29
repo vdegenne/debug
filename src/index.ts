@@ -92,16 +92,28 @@ export class Logger {
 		this.#options.alwaysLog = value
 	}
 
-	#shouldLog() {
-		if (this.#options.alwaysLog === true) {
+	#shouldLog(options?: {
+		alwaysLog?: boolean
+		logIfDevelopment?: boolean
+	}): boolean {
+		options ??= {}
+		if ((options?.alwaysLog ?? this.#options.alwaysLog) === true) {
 			return true
 		}
 
-		if (this.#options.logIfDevelopment === false) {
+		if (
+			(options?.logIfDevelopment ?? this.#options.logIfDevelopment) === false
+		) {
 			return false
 		}
 
 		return isDev()
+	}
+
+	get prefix() {
+		return this.#options.prefix
+			? `[${this.#options.prefix}] `
+			: this.#getFilePrefix()
 	}
 
 	#getFilePrefix(): string {
@@ -131,26 +143,27 @@ export class Logger {
 		return ''
 	}
 
-	log(value: any) {
-		if (!this.#shouldLog()) return
-		const prefix = this.#options.prefix
-			? `[${this.#options.prefix}] `
-			: this.#getFilePrefix()
+	log(value: any, options?: Partial<LoggerOptions>) {
+		if (!this.#shouldLog(options)) return
+		const prefix = options?.prefix ? `[${options.prefix}] ` : this.prefix
 		const msg =
 			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
-		if (this.#options.color) {
-			console.log(this.#options.color(msg))
+		const color = options?.color ?? this.#options.color
+		if (color) {
+			console.log(color(msg))
 		} else {
 			console.log(msg)
 		}
 	}
-	error(value: any) {
-		if (!this.#shouldLog()) return
-		const prefix = this.#getFilePrefix()
+	error(value: any, options?: Partial<LoggerOptions>) {
+		if (!this.#shouldLog(options)) return
+		const prefix = options?.prefix ? `[${options.prefix}] ` : this.prefix
 		const msg =
 			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
-		if (this.#options.errorColor) {
-			console.error(this.#options.errorColor(msg))
+
+		const color = options?.color ?? this.#options.color
+		if (color) {
+			console.error(color(msg))
 		} else {
 			console.error(msg)
 		}
