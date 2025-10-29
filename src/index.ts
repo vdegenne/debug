@@ -161,7 +161,7 @@ export class Logger {
 		const msg =
 			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
 
-		const color = options?.color ?? this.#options.color
+		const color = options?.errorColor ?? this.#options.errorColor
 		if (color) {
 			console.error(color(msg))
 		} else {
