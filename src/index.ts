@@ -37,7 +37,7 @@ export function isDev() {
 		// @ts-ignore
 		typeof process !== 'undefined' &&
 		// @ts-ignore
-		process.env?.NODE_ENV === 'development'
+		process.env?.NODE_ENV.startsWith('dev')
 	) {
 		return true
 	}
@@ -52,7 +52,7 @@ export function isDev() {
 	try {
 		// process.env.NODE_ENV is directly replaced by vite
 		// @ts-ignore
-		if (process.env.NODE_ENV === 'development') {
+		if (process.env.NODE_ENV.startsWith('dev')) {
 			return true
 		}
 	} catch {
