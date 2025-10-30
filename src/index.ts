@@ -101,7 +101,7 @@ export class Logger {
 
 		try {
 			// @ts-ignore
-			thisDoesNotExist() // intentionally fail to get stack
+			thisDoesNotExist() // intentionally fail to get the stack
 		} catch (err: any) {
 			// console.log(err.stack)
 			if (!err.stack) return ''
