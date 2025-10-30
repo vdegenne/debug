@@ -160,7 +160,7 @@ export class Logger {
 
 	debug(value: any, options?: Partial<LogOptions>) {
 		this.#log(
-			value,
+			`[DEBUG] ${typeof value === 'object' ? JSON.stringify(value) : value}`,
 			{...options, color: this.#options.debugColor || options?.color},
 			console.debug,
 		)
