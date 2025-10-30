@@ -2,34 +2,33 @@ export interface ChalkInstance {
 	(...text: unknown[]): string
 }
 
-interface LoggerOptions {
+interface LogOptions {
+	color: ChalkInstance | undefined
 	/**
-	 * If false, will log only in development environments (unless logIfDevelopment is false too).
-	 * Set this property to true if you want to log everywhere (production included)
+	 * By default, only log in development mode.
+	 * Set to true to always log.
 	 *
 	 * @default false
 	 */
-	alwaysLog: boolean
+	force: boolean
+}
 
+interface LoggerOptions extends LogOptions {
 	/**
-	 * Log if development environment is detected.
-	 *
-	 * @default true
+	 * If undefined, will show the name of the script filename instead (if `showFilePrefix` is set to true)
 	 */
-	logIfDevelopment: boolean
+	prefix: string | undefined
 
 	/**
+	 * This is overridden by `prefix`.
+	 * If `prefix` is not set and this is set to false, no prefix will be shown.
+	 *
 	 * @default true
 	 */
 	showFilePrefix: boolean
 
-	/**
-	 * If undefined, will show the name of the script filename instead.
-	 */
-	prefix: string | undefined
-
-	color: ChalkInstance | undefined
 	errorColor: ChalkInstance | undefined
+	debugColor: ChalkInstance | undefined
 }
 
 export function isDev() {
@@ -75,45 +74,26 @@ export class Logger {
 
 	constructor(options?: Partial<LoggerOptions>) {
 		this.#options = {
-			alwaysLog: false,
-			logIfDevelopment: true,
+			force: false,
 			showFilePrefix: true,
 			color: undefined,
 			errorColor: undefined,
+			debugColor: undefined,
 			prefix: undefined,
 			...options,
 		}
 	}
 
-	get shouldLog() {
-		return this.#options.alwaysLog
-	}
-	set shouldLog(value: boolean) {
-		this.#options.alwaysLog = value
-	}
-
-	#shouldLog(options?: {
-		alwaysLog?: boolean
-		logIfDevelopment?: boolean
-	}): boolean {
-		options ??= {}
-		if ((options?.alwaysLog ?? this.#options.alwaysLog) === true) {
-			return true
-		}
-
-		if (
-			(options?.logIfDevelopment ?? this.#options.logIfDevelopment) === false
-		) {
-			return false
-		}
-
+	#shouldLog(): boolean {
 		return isDev()
 	}
 
 	get prefix() {
 		return this.#options.prefix
 			? `[${this.#options.prefix}] `
-			: this.#getFilePrefix()
+			: this.#options.showFilePrefix
+				? this.#getFilePrefix()
+				: ''
 	}
 
 	#getFilePrefix(): string {
@@ -143,29 +123,50 @@ export class Logger {
 		return ''
 	}
 
-	log(value: any, options?: Partial<LoggerOptions>) {
-		if (!this.#shouldLog(options)) return
-		const prefix = options?.prefix ? `[${options.prefix}] ` : this.prefix
+	#log(
+		value: any,
+		options?: Partial<LogOptions>,
+		logFn: (msg: string) => void = console.log,
+	) {
+		const o: LogOptions = {
+			...this.#options,
+			...options,
+		}
+		if (!o.force && !this.#shouldLog()) return
 		const msg =
-			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
-		const color = options?.color ?? this.#options.color
-		if (color) {
-			console.log(color(msg))
+			this.prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
+		if (o.color) {
+			logFn(o.color(msg))
 		} else {
-			console.log(msg)
+			logFn(msg)
 		}
 	}
-	error(value: any, options?: Partial<LoggerOptions>) {
-		if (!this.#shouldLog(options)) return
-		const prefix = options?.prefix ? `[${options.prefix}] ` : this.prefix
-		const msg =
-			prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
 
-		const color = options?.errorColor ?? this.#options.errorColor
-		if (color) {
-			console.error(color(msg))
-		} else {
-			console.error(msg)
-		}
+	log(value: any, options?: Partial<LogOptions>) {
+		this.#log(value, options, console.log)
+	}
+
+	error(value: any, options?: Partial<LogOptions>) {
+		this.#log(
+			value,
+			{...options, color: this.#options.errorColor || options?.color},
+			console.error,
+		)
+	}
+
+	warn(value: any, options?: Partial<LogOptions>) {
+		this.#log(value, options, console.warn)
+	}
+
+	debug(value: any, options?: Partial<LogOptions>) {
+		this.#log(
+			value,
+			{...options, color: this.#options.debugColor || options?.color},
+			console.debug,
+		)
+	}
+
+	plain(value: any, options?: Omit<Partial<LogOptions>, 'color'>) {
+		this.log(value, {...options, color: undefined})
 	}
 }
