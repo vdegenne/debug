@@ -27,6 +27,14 @@ interface LoggerOptions extends LogOptions {
 	 */
 	showFilePrefix: boolean
 
+	/**
+	 * When true, will show all debug logs (from `.debug()` calls).
+	 * Can be useful to disable debug logs in production.
+	 *
+	 * @default true
+	 */
+	debug: boolean
+
 	errorColor: ChalkInstance | undefined
 	debugColor: ChalkInstance | undefined
 }
@@ -75,6 +83,7 @@ export class Logger {
 	constructor(options?: Partial<LoggerOptions>) {
 		this.#options = {
 			force: false,
+			debug: true,
 			showFilePrefix: true,
 			color: undefined,
 			errorColor: undefined,
@@ -132,13 +141,16 @@ export class Logger {
 			...this.#options,
 			...options,
 		}
-		if (!o.force && !this.#shouldLog()) return
-		const msg =
-			this.prefix + (typeof value === 'object' ? JSON.stringify(value) : value)
-		if (o.color) {
-			logFn(o.color(msg))
-		} else {
-			logFn(msg)
+
+		if (this.#shouldLog() || o.force) {
+			const msg =
+				this.prefix +
+				(typeof value === 'object' ? JSON.stringify(value) : value)
+			if (o.color) {
+				logFn(o.color(msg))
+			} else {
+				logFn(msg)
+			}
 		}
 	}
 
@@ -159,11 +171,13 @@ export class Logger {
 	}
 
 	debug(value: any, options?: Partial<LogOptions>) {
-		this.#log(
-			`[DEBUG] ${typeof value === 'object' ? JSON.stringify(value) : value}`,
-			{...options, color: this.#options.debugColor || options?.color},
-			console.debug,
-		)
+		if (this.#options.debug || options?.force) {
+			this.#log(
+				`[DEBUG] ${typeof value === 'object' ? JSON.stringify(value) : value}`,
+				{...options, color: this.#options.debugColor || options?.color},
+				console.debug,
+			)
+		}
 	}
 
 	plain(value: any, options?: Omit<Partial<LogOptions>, 'color'>) {
