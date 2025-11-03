@@ -117,7 +117,8 @@ export class Logger {
 
 			const lines = err.stack.split('\n')
 			// third line is usually the caller of Logger.log
-			const callerLine = lines[3] || lines[2] || lines[1] || ''
+			const callerLine =
+				lines[5] || lines[4] || lines[3] || lines[2] || lines[1] || ''
 
 			// extract filename from path, works for file:/// or /absolute/path
 			const match = callerLine.match(/([\/\\]?[\w\-]+)\.(ts|js)/)

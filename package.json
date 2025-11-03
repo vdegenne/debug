@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/debug",
-	"version": "0.1.21",
+	"version": "0.1.22",
 	"description": "",
 	"type": "module",
 	"exports": {
@@ -17,7 +17,7 @@
 	],
 	"devDependencies": {
 		"typescript": "^5.9.3",
-		"vite": "^7.1.9",
+		"vite": "^7.1.12",
 		"wireit": "^0.14.12"
 	},
 	"wireit": {
