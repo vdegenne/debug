@@ -1,9 +1,12 @@
-export interface ChalkInstance {
-	(...text: unknown[]): string
-}
+import chalk, {ChalkInstance} from 'chalk'
+
+// export interface ChalkInstance {
+// 	(...text: unknown[]): string
+// }
 
 interface LogOptions {
-	color: ChalkInstance | undefined
+	// color: ChalkInstance | undefined
+
 	/**
 	 * By default, only log in development mode.
 	 * Set to true to always log.
@@ -12,6 +15,9 @@ interface LogOptions {
 	 */
 	force: boolean
 }
+
+type LogMethod = 'log' | 'error' | 'warn' | 'debug'
+type ColorMap = Record<LogMethod, ChalkInstance | undefined>
 
 interface LoggerOptions extends LogOptions {
 	/**
@@ -35,8 +41,7 @@ interface LoggerOptions extends LogOptions {
 	 */
 	debug: boolean
 
-	errorColor: ChalkInstance | undefined
-	debugColor: ChalkInstance | undefined
+	colors: ColorMap
 }
 
 export function isDev() {
@@ -67,6 +72,7 @@ export function isDev() {
 	}
 	try {
 		// import.meta.env.DEV is directly replaced by vite
+		// @ts-ignore
 		if (import.meta.env.DEV === true) {
 			return true
 		}
@@ -79,22 +85,28 @@ export function isDev() {
 
 export class Logger {
 	#options: LoggerOptions
+	#forceMethod = false
 
 	constructor(options?: Partial<LoggerOptions>) {
 		this.#options = {
 			force: false,
 			debug: true,
 			showFilePrefix: true,
-			color: undefined,
-			errorColor: undefined,
-			debugColor: undefined,
+			colors: {} as any,
 			prefix: undefined,
 			...options,
+		}
+		this.#options.colors = {
+			log: undefined,
+			error: chalk.red,
+			warn: undefined,
+			debug: undefined,
+			...options?.colors,
 		}
 	}
 
 	#shouldLog(): boolean {
-		return isDev()
+		return isDev() || this.#options.force
 	}
 
 	get prefix() {
@@ -118,7 +130,13 @@ export class Logger {
 			const lines = err.stack.split('\n')
 			// third line is usually the caller of Logger.log
 			const callerLine =
-				lines[5] || lines[4] || lines[3] || lines[2] || lines[1] || ''
+				(this.#forceMethod && lines[6]) ||
+				lines[5] ||
+				lines[4] ||
+				lines[3] ||
+				lines[2] ||
+				lines[1] ||
+				''
 
 			// extract filename from path, works for file:/// or /absolute/path
 			const match = callerLine.match(/([\/\\]?[\w\-]+)\.(ts|js)/)
@@ -126,62 +144,61 @@ export class Logger {
 				// get basename without extension
 				const parts = match[1].split(/[\/\\]/)
 				const file = parts[parts.length - 1] as string
-				return `[${file.toUpperCase()}] `
+				return `[${file.toUpperCase()}]`
 			}
 		}
 
 		return ''
 	}
 
-	#log(
-		value: any,
-		options?: Partial<LogOptions>,
-		logFn: (msg: string) => void = console.log,
-	) {
-		const o: LogOptions = {
-			...this.#options,
-			...options,
-		}
+	#log(method: LogMethod | 'plain', data: any[]) {
+		if (!this.#shouldLog()) return
 
-		if (this.#shouldLog() || o.force) {
-			const msg =
-				this.prefix +
-				(typeof value === 'object' ? JSON.stringify(value) : value)
-			if (o.color) {
-				logFn(o.color(msg))
-			} else {
-				logFn(msg)
-			}
-		}
+		let logFn = method === 'plain' ? console.log : console[method]
+		let color = method === 'plain' ? undefined : this.#options.colors[method]
+
+		const parts = [this.prefix, ...data]
+		const output = color ? parts.map((x) => color(x)) : parts
+
+		logFn(...output)
 	}
 
-	log(value: any, options?: Partial<LogOptions>) {
-		this.#log(value, options, console.log)
+	log(...data: any[]) {
+		this.#log('log', data)
 	}
 
-	error(value: any, options?: Partial<LogOptions>) {
-		this.#log(
-			value,
-			{...options, color: this.#options.errorColor || options?.color},
-			console.error,
-		)
+	error(...data: any[]) {
+		this.#log('error', data)
 	}
 
-	warn(value: any, options?: Partial<LogOptions>) {
-		this.#log(value, options, console.warn)
+	warn(...data: any[]) {
+		// TODO: add warn color
+		this.#log('warn', data)
 	}
 
-	debug(value: any, options?: Partial<LogOptions>) {
-		if (this.#options.debug || options?.force) {
-			this.#log(
-				`[DEBUG] ${typeof value === 'object' ? JSON.stringify(value) : value}`,
-				{...options, color: this.#options.debugColor || options?.color},
-				console.debug,
-			)
+	debug(...data: any[]) {
+		if (this.#options.debug) {
+			this.#log('debug', ['[DEBUG]', ...data])
 		}
 	}
 
-	plain(value: any, options?: Omit<Partial<LogOptions>, 'color'>) {
-		this.log(value, {...options, color: undefined})
+	plain(...data: any[]) {
+		this.#log('plain', data)
+	}
+
+	force(method: LogMethod, ...data: []) {
+		this.#forceMethod = true
+		const wasForced = this.#options.force === true
+		const wasDebug = this.#options.debug === true
+		this.#options.force = true
+		this.#options.debug = true
+		this[method](...data)
+		if (!wasForced) {
+			this.#options.force = false
+		}
+		if (!wasDebug) {
+			this.#options.debug = false
+		}
+		this.#forceMethod = false
 	}
 }

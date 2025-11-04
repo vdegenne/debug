@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/debug",
-	"version": "0.1.22",
+	"version": "0.1.23",
 	"description": "",
 	"type": "module",
 	"exports": {
@@ -9,16 +9,21 @@
 			"types": "./lib/index.d.ts"
 		}
 	},
-	"scripts": {
-		"build": "wireit"
-	},
 	"files": [
 		"./lib/"
 	],
 	"devDependencies": {
+		"chalk": "^5.6.2",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.12",
 		"wireit": "^0.14.12"
+	},
+	"peerDependencies": {
+		"chalk": "^5.0.0"
+	},
+	"scripts": {
+		"build": "wireit",
+		"test": "wireit"
 	},
 	"wireit": {
 		"build": {
@@ -31,6 +36,16 @@
 			"output": [
 				"./lib"
 			]
+		},
+		"test": {
+			"command": "node ./test.js",
+			"dependencies": [
+				"build"
+			],
+			"files": [
+				"./test.js"
+			],
+			"output": []
 		}
 	}
 }
