@@ -108,7 +108,7 @@ export class Logger {
 
 	get prefix() {
 		return this.#options.prefix
-			? `[${this.#options.prefix}] `
+			? `[${this.#options.prefix}]`
 			: this.#options.showFilePrefix
 				? this.#getFilePrefix()
 				: ''
