@@ -188,7 +188,7 @@ export class Logger {
 		this.#log('plain', data)
 	}
 
-	force(method: LogMethod, ...data: []) {
+	force(method: LogMethod, ...data: any[]) {
 		this.#forceMethod = true
 		const wasForced = this.#options.force === true
 		const wasDebug = this.#options.debug === true
