@@ -41,7 +41,7 @@ interface LoggerOptions extends LogOptions {
 	 */
 	debug: boolean
 
-	colors: ColorMap
+	colors: Partial<ColorMap>
 }
 
 export function isDev() {
@@ -92,15 +92,12 @@ export class Logger {
 			force: false,
 			debug: true,
 			showFilePrefix: true,
-			colors: {} as any,
+			colors: {},
 			prefix: undefined,
 			...options,
 		}
 		this.#options.colors = {
-			log: undefined,
 			error: chalk.red,
-			warn: undefined,
-			debug: undefined,
 			...options?.colors,
 		}
 	}
