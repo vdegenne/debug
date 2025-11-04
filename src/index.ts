@@ -160,9 +160,11 @@ export class Logger {
 				typeof x === 'object' && x !== null ? JSON.stringify(x) : x,
 			),
 		]
-		const output = color ? parts.map((x) => color(x)) : parts
 
-		logFn(...output)
+		// join all parts into one string and apply color once
+		const output = color ? color(parts.join(' ')) : parts.join(' ')
+
+		logFn(output)
 	}
 
 	log(...data: any[]) {

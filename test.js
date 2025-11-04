@@ -2,7 +2,7 @@ import {Logger} from './lib/index.js'
 import chalk from 'chalk'
 
 const l = new Logger({
-	force: false,
+	force: true,
 	debug: true,
 	colors: {
 		log: chalk.yellow,
