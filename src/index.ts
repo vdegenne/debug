@@ -151,10 +151,15 @@ export class Logger {
 	#log(method: LogMethod | 'plain', data: any[]) {
 		if (!this.#shouldLog()) return
 
-		let logFn = method === 'plain' ? console.log : console[method]
-		let color = method === 'plain' ? undefined : this.#options.colors[method]
+		const logFn = method === 'plain' ? console.log : console[method]
+		const color = method === 'plain' ? undefined : this.#options.colors[method]
 
-		const parts = [this.prefix, ...data]
+		const parts = [
+			this.prefix,
+			...data.map((x) =>
+				typeof x === 'object' && x !== null ? JSON.stringify(x) : x,
+			),
+		]
 		const output = color ? parts.map((x) => color(x)) : parts
 
 		logFn(...output)
